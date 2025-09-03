@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Info, Share, ReceiptText } from 'lucide-react';
 import { RiBankCardFill } from "react-icons/ri";
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../common/Header';
 import { FaFilePdf } from "react-icons/fa";
 import { IoMdImages } from "react-icons/io";
@@ -15,6 +15,7 @@ const DonationPage = () => {
   const [event, setEvent] = useState(null);
 
   const { id } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEventDetails = async () => {
@@ -90,20 +91,35 @@ const DonationPage = () => {
 
   const handleDonate = () => {
     const amount = selectedAmount === 'custom' ? parseFloat(customAmount) : selectedAmount;
-    if (!amount || !selectedPaymentMethod) {
-      alert('Please select an amount and payment method');
+    
+    // Validation
+    if (!amount || amount <= 0) {
+      alert('Please select a valid donation amount');
       return;
     }
     
-    console.log('Donation details:', {
-      amount,
-      paymentMethod: selectedPaymentMethod,
-      supportMessage,
-      anonymous: donateAnonymously,
-      eventId: event?._id
-    });
+    if (!selectedPaymentMethod) {
+      alert('Please select a payment method');
+      return;
+    }
     
-    alert(`Donation of LKR ${amount} initiated successfully!`);
+    // Prepare donation data
+    const donationData = {
+      eventId: event._id,
+      eventTitle: event.title,
+      amount: amount,
+      paymentMethod: selectedPaymentMethod,
+      anonymous: donateAnonymously,
+      supportMessage: supportMessage,
+    };
+    
+    if (selectedPaymentMethod === 'card') {
+      // Navigate to card payment page
+      navigate('/card-payment', { state: donationData });
+    } else if (selectedPaymentMethod === 'bank_slip') {
+      // Navigate to bank slip page
+      navigate('/bank-slip-payment', { state: donationData });
+    }
   };
 
   if (!event) {
@@ -249,6 +265,7 @@ const DonationPage = () => {
                 </div>
               </div>
               <div className='border-[0.1px] mb-4 border-zinc-200' />
+
               <div className="mb-8">
                 <label className="text-lg font-semibold text-gray-900 mb-4 block font-family-inter">
                   Select Donation Amount <span className="text-red-500">*</span>
@@ -298,6 +315,7 @@ const DonationPage = () => {
                   </div>
                 </div>
               </div>
+
               <div className="mb-8">
                 <label className="text-lg font-semibold text-gray-900 mb-4 block font-family-inter">
                   Select Payment Method <span className="text-red-500">*</span>
@@ -319,6 +337,7 @@ const DonationPage = () => {
                   ))}
                 </div>
               </div>
+
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
                   <label className="text-lg font-semibold text-gray-900 font-family-inter">
@@ -334,12 +353,14 @@ const DonationPage = () => {
                   rows="2"
                 />
               </div>
+
               <div className="mb-6 p-4 bg-orange-100/40 rounded-lg">
                 <h4 className="font-semibold text-orange-600 mb-2 font-family-inter">Disclaimer :</h4>
                 <ul className="text-orange-600 text-sm space-y-1 font-family-inter">
                   <li>• Donations made by the above means are final and will not be refunded.</li>
                 </ul>
               </div>
+
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                   <div className="relative">
@@ -369,6 +390,7 @@ const DonationPage = () => {
                   <Info className="w-4 h-4 text-gray-400" />
                 </div>
               </div>
+
               <div className="flex gap-4">
                 <button 
                   onClick={handleShare}

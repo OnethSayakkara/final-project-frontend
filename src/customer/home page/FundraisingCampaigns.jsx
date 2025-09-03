@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const FundraisingCampaigns = () => {
   const [campaigns, setCampaigns] = useState([]);
+  const [programmeStatus, setProgrammeStatus] = useState('Active'); // Default status
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -30,6 +31,12 @@ const FundraisingCampaigns = () => {
 
     fetchEvents();
   }, []);
+
+  const navigate = useNavigate();
+
+  const handleButtonClick = (id) => {
+    navigate(`/donation/${id}`);
+  };
 
   return (
     <section className="py-8 px-48 font-family-inter">
@@ -118,8 +125,11 @@ const FundraisingCampaigns = () => {
                 </div>
               </div>
               
-              <button className="w-full bg-pink-700 text-white py-2 rounded hover:bg-pink-800">
-                View
+              <button
+                onClick={() => handleButtonClick(campaign._id)}
+                className="w-full bg-pink-700 text-white py-2 rounded hover:bg-pink-800"
+              >
+                {programmeStatus === 'Active' ? 'Donate Now' : 'View'}
               </button>
             </div>
           </div>
@@ -128,8 +138,7 @@ const FundraisingCampaigns = () => {
       <div className="text-center mt-14 mb-9">
         <Link to='/allevents'><button className="bg-purple-900 text-white px-6 py-2 rounded hover:bg-purple-950">
           See More
-        </button>
-        </Link>
+        </button></Link>
       </div>
     </section>
   );

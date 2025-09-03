@@ -6,6 +6,9 @@ import RegisterComponent from './authentication/RegisterComponent'
 import OrganizerTypeSelector from './authentication/OrganizerTypeSelector'
 import Login from './authentication/Login'
 import DonationPage from './customer/otherpages/DonationPage'
+import BankSlipPayment from './customer/payment/BankSlipPayment'
+import CardPayment from './customer/payment/CardPayment'
+import PaymentSuccess from './customer/payment/PaymentSuccess'
 
 function App() {
   
@@ -18,6 +21,9 @@ function App() {
       <Route path='/organizerSelecter' element={<OrganizerTypeSelector/>}/>
       <Route path='/login' element={<Login/>}/>
       <Route path='/donation/:id' element={<DonationPage/>}/>
+       <Route path="/bank-slip-payment" element={<BankSlipPayment/>} />
+       <Route path="/card-payment" element={<CardPayment/>} />
+       <Route path="/success" element={<PaymentSuccess/>} />
 
 
 
