@@ -1,10 +1,19 @@
 import React from 'react'
+import Header from '../../common/Header'
+import Hero from './Hero'
+import Banner from './Banner'
+import FundraisingCampaigns from './FundraisingCampaigns'
+import Banner2 from './Banner2'
 
 const HomePage = () => {
   return (
-    <div className='bg-red-500 text-orange-500'>
-     <p className='text-5xl'>home page</p>
-    </div>
+    <>
+    <Header/>
+    <Hero/>
+    <Banner/>
+    <FundraisingCampaigns/>
+    <Banner2/>
+    </>
   )
 }
 
