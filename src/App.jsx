@@ -9,6 +9,7 @@ import DonationPage from './customer/otherpages/DonationPage'
 import BankSlipPayment from './customer/payment/BankSlipPayment'
 import CardPayment from './customer/payment/CardPayment'
 import PaymentSuccess from './customer/payment/PaymentSuccess'
+import MyProfile from './customer/profile/MyProfile'
 
 function App() {
   
@@ -24,6 +25,7 @@ function App() {
        <Route path="/bank-slip-payment" element={<BankSlipPayment/>} />
        <Route path="/card-payment" element={<CardPayment/>} />
        <Route path="/success" element={<PaymentSuccess/>} />
+       <Route path="/my-profile" element={<MyProfile/>} />
 
 
 

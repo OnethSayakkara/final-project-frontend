@@ -221,7 +221,7 @@ const CardPayment = () => {
                     inputProps={{
                       name: 'mobileNumber',
                       required: true,
-                      className: `w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-family-inter ${
+                      className: `w-full px-11 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-family-inter ${
                         errors.mobileNumber ? 'border-red-300 bg-red-50' : 'border-gray-300 bg-gray-50'
                       }`
                     }}

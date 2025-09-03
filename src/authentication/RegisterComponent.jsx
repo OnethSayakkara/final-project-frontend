@@ -6,6 +6,8 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const RegisterComponent = () => {
   const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
   });
@@ -42,6 +44,10 @@ const RegisterComponent = () => {
       toast.error('Please agree to the Terms & Conditions.');
       return;
     }
+    if (!formData.firstName || !formData.lastName) {
+      toast.error('First name and Last name are required.');
+      return;
+    }
     if (!formData.email) {
       toast.error('Email is required.');
       return;
@@ -66,6 +72,8 @@ const RegisterComponent = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
           email: formData.email,
           password: formData.password,
         }),
@@ -111,6 +119,36 @@ const RegisterComponent = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* First & Last Name (Flex Row) */}
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2 font-family-inter">
+                  First Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  placeholder="First Name"
+                  className="w-full px-4 py-3 border font-family-inter border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900 placeholder-gray-400"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2 font-family-inter">
+                  Last Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  placeholder="Last Name"
+                  className="w-full px-4 py-3 border font-family-inter border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900 placeholder-gray-400"
+                />
+              </div>
+            </div>
+
             {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2 font-family-inter">
