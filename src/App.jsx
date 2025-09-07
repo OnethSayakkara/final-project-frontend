@@ -10,6 +10,10 @@ import BankSlipPayment from './customer/payment/BankSlipPayment'
 import CardPayment from './customer/payment/CardPayment'
 import PaymentSuccess from './customer/payment/PaymentSuccess'
 import MyProfile from './customer/profile/MyProfile'
+import RegistrationSuccess from './authentication/RegistrationSuccess'
+import BankSlipForm from './customer/payment/BankSlipForm'
+import BankSlipSuccess from './customer/payment/BankSlipSuccess'
+import OrganizerRoutes from './organizers/OrganizerRoutes'
 
 function App() {
   
@@ -26,6 +30,9 @@ function App() {
        <Route path="/card-payment" element={<CardPayment/>} />
        <Route path="/success" element={<PaymentSuccess/>} />
        <Route path="/my-profile" element={<MyProfile/>} />
+       <Route path="/registration-success" element={<RegistrationSuccess/>} />
+       <Route path="/bank-slip-success" element={<BankSlipSuccess/>} />
+       <Route path="/Organizer/*" element={<OrganizerRoutes />} />
 
 
 

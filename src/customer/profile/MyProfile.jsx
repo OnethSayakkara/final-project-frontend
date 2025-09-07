@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Eye, EyeOff, Settings, LogOut } from 'lucide-react';
 import { FaUserCircle } from "react-icons/fa";
 import Header from '../../common/Header';
+import Footer from '../../common/Footer';
 import { FaHandHoldingHeart } from "react-icons/fa6";
 import { TfiMedall } from "react-icons/tfi";
 import { Link } from 'react-router-dom';
@@ -189,6 +190,8 @@ const MyProfile = () => {
     };
 
     const renderChangePassword = () => (
+        <div>
+            <Header/>
         <div className="min-h-screen bg-gray-50 p-6 font-family-inter">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
@@ -301,6 +304,8 @@ const MyProfile = () => {
                     </div>
                 </div>
             </div>
+        </div>
+        <Footer/>
         </div>
     );
 
