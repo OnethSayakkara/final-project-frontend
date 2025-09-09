@@ -14,6 +14,7 @@ import RegistrationSuccess from './authentication/RegistrationSuccess'
 import BankSlipForm from './customer/payment/BankSlipForm'
 import BankSlipSuccess from './customer/payment/BankSlipSuccess'
 import OrganizerRoutes from './organizers/OrganizerRoutes'
+import Categories from './customer/otherpages/Categories'
 
 function App() {
   
@@ -33,6 +34,7 @@ function App() {
        <Route path="/registration-success" element={<RegistrationSuccess/>} />
        <Route path="/bank-slip-success" element={<BankSlipSuccess/>} />
        <Route path="/Organizer/*" element={<OrganizerRoutes />} />
+       <Route path="/categories" element={<Categories />} />
 
 
 

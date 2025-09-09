@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Heart, Users, PawPrint, BookOpen, AlertTriangle, TreePine, Shield, Trophy } from 'lucide-react';
+import { MapPin, Heart, Users, PawPrint, BookOpen, AlertTriangle, TreePine, Shield, Trophy, X } from 'lucide-react';
 import { RiVirusLine } from "react-icons/ri";
 import Lottie from "lottie-react";
 import animationData from "../../../public/No-Data.json";
@@ -8,6 +8,9 @@ import { Link } from 'react-router-dom';
 import { MdDateRange } from "react-icons/md";
 import { FaRegClock } from "react-icons/fa6";
 import Footer from '../../common/Footer';
+import { MapContainer, TileLayer, Marker, Circle, useMapEvents } from 'react-leaflet';
+import { MdOutlineMyLocation } from "react-icons/md";
+import 'leaflet/dist/leaflet.css';
 
 const ErrorBoundary = ({ children }) => {
   const [hasError, setHasError] = useState(false);
@@ -36,6 +39,11 @@ const CharityEventsPage = () => {
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [showLocationPopup, setShowLocationPopup] = useState(false);
+  const [selectedLatLng, setSelectedLatLng] = useState(null); // {lat, lng}
+  const [radius, setRadius] = useState(5); // in km
+  const [locationSearch, setLocationSearch] = useState('');
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
 
   const categories = [
     { name: 'Healthcare', icon: Heart, color: 'bg-pink-100' },
@@ -48,13 +56,66 @@ const CharityEventsPage = () => {
     { name: 'sports', icon: Trophy, color: 'bg-gray-100' },
   ];
 
+  const geocode = async (address) => {
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', Sri Lanka')}&addressdetails=1`);
+      const data = await response.json();
+      if (data[0]) {
+        return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      }
+      return null;
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      return null;
+    }
+  };
+
+  const fetchLocationSuggestions = async (query) => {
+    if (query.length < 3) {
+      setLocationSuggestions([]);
+      return;
+    }
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ', Sri Lanka')}&addressdetails=1&limit=5`);
+      const data = await response.json();
+      setLocationSuggestions(data.map(item => ({
+        displayName: item.display_name,
+        lat: parseFloat(item.lat),
+        lng: parseFloat(item.lon),
+      })));
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+      setLocationSuggestions([]);
+    }
+  };
+
+  const calculateDistance = (coord1, coord2) => {
+    if (!coord1 || !coord2) return Infinity;
+    const toRad = (x) => (x * Math.PI) / 180;
+    const dLat = toRad(coord2.lat - coord1.lat);
+    const dLon = toRad(coord2.lng - coord1.lng);
+    const lat1 = toRad(coord1.lat);
+    const lat2 = toRad(coord2.lat);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const R = 6371; // km
+    return R * c;
+  };
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         const response = await fetch('http://localhost:3000/event/allEvents');
         if (!response.ok) throw new Error('Failed to fetch events');
         const data = await response.json();
-        setEvents(data);
+        const geocoded = await Promise.all(
+          data.map(async (event) => {
+            if (event.location === 'Islandwide') return { ...event, latlng: null };
+            const latlng = await geocode(event.location);
+            return { ...event, latlng };
+          })
+        );
+        setEvents(geocoded);
       } catch (error) {
         console.error('Error fetching events:', error);
         setEvents([]);
@@ -105,6 +166,12 @@ const CharityEventsPage = () => {
       });
     }
 
+    if (selectedLatLng && radius) {
+      updatedEvents = updatedEvents.filter(
+        (event) => event.latlng && calculateDistance(event.latlng, selectedLatLng) <= radius
+      );
+    }
+
     updatedEvents.sort((a, b) => {
       if (sortBy === 'Amount Raised') {
         return b.raisedAmount - a.raisedAmount;
@@ -123,7 +190,7 @@ const CharityEventsPage = () => {
     }));
 
     setFilteredEvents(updatedEvents);
-  }, [selectedCategory, selectedStatus, selectedTypes, dateRange, sortBy, events]);
+  }, [selectedCategory, selectedStatus, selectedTypes, dateRange, sortBy, events, selectedLatLng, radius]);
 
   const handleDateSelect = (dateString) => {
     if (!dateRange.from || (dateRange.from && dateRange.to)) {
@@ -134,6 +201,30 @@ const CharityEventsPage = () => {
       setDateRange({ from: dateString, to: dateRange.from });
     }
   };
+
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setSelectedLatLng({ lat: position.coords.latitude, lng: position.coords.longitude });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+        }
+      );
+    } else {
+      console.error('Geolocation not supported');
+    }
+  };
+
+  function MapClickHandler() {
+    useMapEvents({
+      click: (e) => {
+        setSelectedLatLng({ lat: e.latlng.lat, lng: e.latlng.lng });
+      },
+    });
+    return null;
+  }
 
   return (
     <ErrorBoundary>
@@ -178,6 +269,8 @@ const CharityEventsPage = () => {
                     setDateRange({ from: '', to: '' });
                     setSortBy('Date Added (Newest)');
                     setShowDatePicker(false);
+                    setSelectedLatLng(null);
+                    setRadius(5);
                   }}>Reset</button>
 
                   <div className="mb-6">
@@ -377,6 +470,15 @@ const CharityEventsPage = () => {
                     <div className="flex items-center justify-between mb-3">
                       <label className="text-base font-semibold text-black font-family-inter">Location</label>
                     </div>
+                    <div className='flex flex-row gap-3 border-2 text-purple-800 cursor-pointer hover:text-purple-700 hover:border-purple-700 border-purple-800 p-2 rounded-md items-center justify-center'>
+                      <MdOutlineMyLocation className='text-2xl'/>
+                         <button
+                      onClick={() => setShowLocationPopup(true)}
+                    >
+                      Set Location
+                    </button>
+                    </div>
+                   
                   </div>
                 </div>
               </div>
@@ -565,6 +667,113 @@ const CharityEventsPage = () => {
         </div>
         <Footer/>
       </div>
+
+      {showLocationPopup && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 font-family-inter">
+          <div className="bg-white rounded-lg p-4 w-[600px] max-h-[85vh] overflow-y-auto">
+            <h2 className="text-lg font-semibold mb-2">Set Location</h2>
+            <p className="text-sm text-gray-600 mb-4">Pin Location on the map</p>
+            <button
+              onClick={getCurrentLocation}
+              className="flex items-center text-purple-600 mb-4"
+            >
+              <MapPin className="w-4 h-4 mr-1" /> Current Location
+            </button>
+            <div className="relative mb-4">
+              <input
+                type="text"
+                placeholder="Search on map..."
+                value={locationSearch}
+                onChange={(e) => {
+                  setLocationSearch(e.target.value);
+                  fetchLocationSuggestions(e.target.value);
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md pr-10"
+              />
+              {locationSearch && (
+                <button
+                  onClick={() => {
+                    setLocationSearch('');
+                    setLocationSuggestions([]);
+                  }}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+              {locationSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-md mt-1 z-10 max-h-40 overflow-y-auto">
+                  {locationSuggestions.map((suggestion, index) => (
+                    <div
+                      key={index}
+                      onClick={() => {
+                        setLocationSearch(suggestion.displayName);
+                        setSelectedLatLng({ lat: suggestion.lat, lng: suggestion.lng });
+                        setLocationSuggestions([]);
+                      }}
+                      className="px-3 py-2 cursor-pointer hover:bg-gray-100"
+                    >
+                      {suggestion.displayName}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="mb-4">
+              <label className="text-sm font-medium mb-2 block">Area Radius</label>
+              <div className="flex gap-4">
+                {[5, 10, 20].map((r) => (
+                  <label key={r} className="flex items-center">
+                    <input
+                      type="radio"
+                      checked={radius === r}
+                      onChange={() => setRadius(r)}
+                      className="mr-2"
+                    />
+                    {r}km
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="h-64 bg-gray-100 rounded-md overflow-hidden">
+              <MapContainer
+                center={selectedLatLng ? [selectedLatLng.lat, selectedLatLng.lng] : [7.8731, 80.7718]} // Default to Sri Lanka center
+                zoom={8}
+                style={{ height: '100%', width: '100%' }}
+              >
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                {selectedLatLng && (
+                  <>
+                    <Marker position={[selectedLatLng.lat, selectedLatLng.lng]} />
+                    <Circle center={[selectedLatLng.lat, selectedLatLng.lng]} radius={radius * 1000} />
+                  </>
+                )}
+                <MapClickHandler />
+              </MapContainer>
+            </div>
+            <div className="flex justify-end gap-4 mt-4">
+              <button
+                onClick={() => {
+                  setShowLocationPopup(false);
+                  setLocationSuggestions([]);
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowLocationPopup(false);
+                  setLocationSuggestions([]);
+                }}
+                className="px-4 py-2 bg-purple-600 text-white rounded-md"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </ErrorBoundary>
   );
 };

@@ -3,6 +3,7 @@ import { RiHealthBookFill, RiTeamFill } from "react-icons/ri"; // Import RiHealt
 import { IoPaw } from "react-icons/io5"; // Import IoPaw
 import { LuSiren } from "react-icons/lu"; // Import LuSiren
 import { GraduationCap } from "lucide-react"; // Import GraduationCap from lucide-react
+import { Link } from "react-router-dom";
 
 const causes = [
   {
@@ -42,6 +43,7 @@ const CausesSection = () => {
   const [selected, setSelected] = useState(0);
 
   return (
+    
     <div className="max-w-[90rem] px-28 font-family-inter">
       <div>
         <h2 className="text-4xl font-semibold mb-7">Find Causes You Care About</h2>
@@ -84,7 +86,9 @@ const CausesSection = () => {
       </div>
       {/* Center the "See More" button */}
       <div className="flex justify-center mt-14">
+        <Link to="/categories">
         <button className="px-7 py-2 bg-purple-800 text-white rounded mb-10">See More</button>
+        </Link>
       </div>
     </div>
   );

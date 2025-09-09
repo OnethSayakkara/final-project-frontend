@@ -51,8 +51,8 @@ const Header = () => {
               onClick={() => setIsPopupOpen(!isPopupOpen)}
               className="flex items-center space-x-2 text-purple-800 hover:text-purple-600"
             >
-              <CgProfile className="w-6 h-6" />
-              <span className="hidden md:inline">Oneth Sayakkara</span> {/* Replace with dynamic user name if available */}
+              <CgProfile className="w-10 h-10" />
+             
             </button>
             {isPopupOpen && (
               <div className="absolute right-0 mt-7 w-48 bg-white shadow-lg rounded py-2 z-20">
