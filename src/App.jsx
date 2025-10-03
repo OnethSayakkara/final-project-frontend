@@ -15,6 +15,8 @@ import BankSlipForm from './customer/payment/BankSlipForm'
 import BankSlipSuccess from './customer/payment/BankSlipSuccess'
 import OrganizerRoutes from './organizers/OrganizerRoutes'
 import Categories from './customer/otherpages/Categories'
+import OrganizerRegistratioComponent from './authentication/OrganizerRegistratioComponent'
+import AdminRoutes from './admin/AdminRoutes'
 
 function App() {
   
@@ -34,7 +36,9 @@ function App() {
        <Route path="/registration-success" element={<RegistrationSuccess/>} />
        <Route path="/bank-slip-success" element={<BankSlipSuccess/>} />
        <Route path="/Organizer/*" element={<OrganizerRoutes />} />
+       <Route path="/Admin/*" element={<AdminRoutes />} />
        <Route path="/categories" element={<Categories />} />
+      <Route path="/OrganizerRegistration" element={<OrganizerRegistratioComponent />} />
 
 
 

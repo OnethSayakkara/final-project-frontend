@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import individual from '../../public/individudal.png';
 import group from '../../public/group.png';
 import register from '../../public/hand.webp';
+import { Link } from 'react-router-dom';
 
 const OrganizerTypeSelector = () => {
   const [selectedType, setSelectedType] = useState(null);
@@ -97,13 +98,14 @@ const OrganizerTypeSelector = () => {
                 who is running charity campaigns?
               </p>
               </div>
-              
+              <Link to='/OrganizerRegistration'>
               <button 
                 onClick={() => setSelectedType('organization')}
                 className="w-full bg-purple-600 text-white font-medium py-2 px-4 rounded font-family-inter hover:bg-purple-700 transition-colors text-lg mb-6"
               >
                 Sign Up
               </button>
+              </Link>
               
               <div className="text-center font-family-inter">
                 <span className="text-gray-600">Already Registered? </span>

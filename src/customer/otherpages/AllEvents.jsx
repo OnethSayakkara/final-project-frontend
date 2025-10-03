@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Heart, Users, PawPrint, BookOpen, AlertTriangle, TreePine, Shield, Trophy, X } from 'lucide-react';
+import { MapPin, Heart, Users, PawPrint, BookOpen, AlertTriangle, TreePine, Trophy, X } from 'lucide-react';
 import { RiVirusLine } from "react-icons/ri";
 import Lottie from "lottie-react";
 import animationData from "../../../public/No-Data.json";
@@ -40,8 +40,8 @@ const CharityEventsPage = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showLocationPopup, setShowLocationPopup] = useState(false);
-  const [selectedLatLng, setSelectedLatLng] = useState(null); // {lat, lng}
-  const [radius, setRadius] = useState(5); // in km
+  const [selectedLatLng, setSelectedLatLng] = useState(null);
+  const [radius, setRadius] = useState(5);
   const [locationSearch, setLocationSearch] = useState('');
   const [locationSuggestions, setLocationSuggestions] = useState([]);
 
@@ -53,7 +53,7 @@ const CharityEventsPage = () => {
     { name: 'Emergency', icon: AlertTriangle, color: 'bg-gray-100' },
     { name: 'Environment', icon: TreePine, color: 'bg-gray-100' },
     { name: 'Cancer', icon: RiVirusLine, color: 'bg-gray-100' },
-    { name: 'sports', icon: Trophy, color: 'bg-gray-100' },
+    { name: 'Sports', icon: Trophy, color: 'bg-gray-100' },
   ];
 
   const geocode = async (address) => {
@@ -105,8 +105,11 @@ const CharityEventsPage = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch('http://localhost:3000/event/allEvents');
-        if (!response.ok) throw new Error('Failed to fetch events');
+        const endpoint = activeTab === 'Trending'
+          ? 'http://localhost:3000/event/trending'
+          : 'http://localhost:3000/event/allEvents';
+        const response = await fetch(endpoint);
+        if (!response.ok) throw new Error(`Failed to fetch ${activeTab} events`);
         const data = await response.json();
         const geocoded = await Promise.all(
           data.map(async (event) => {
@@ -117,12 +120,12 @@ const CharityEventsPage = () => {
         );
         setEvents(geocoded);
       } catch (error) {
-        console.error('Error fetching events:', error);
+        console.error(`Error fetching ${activeTab} events:`, error);
         setEvents([]);
       }
     };
     fetchEvents();
-  }, []);
+  }, [activeTab]); // Re-fetch when activeTab changes
 
   useEffect(() => {
     let updatedEvents = [...events];
@@ -296,6 +299,8 @@ const CharityEventsPage = () => {
                       >
                         <option className="font-family-inter">Date Added (Newest)</option>
                         <option className="font-family-inter">Date Added (Oldest)</option>
+                        <option className="font-family-inter">Amount Raised</option>
+                        <option className="font-family-inter">Goal Amount</option>
                       </select>
                       <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                         <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -344,7 +349,7 @@ const CharityEventsPage = () => {
                               }
                             }}
                           />
-                          <span className="text-base font-medium text-gray-600 font-family-inter">{type}</span>
+                          <span className="text-base font-medium text-gray-600 font-family-inter">{type.charAt(0).toUpperCase() + type.slice(1)}</span>
                         </label>
                       ))}
                     </div>
@@ -472,20 +477,21 @@ const CharityEventsPage = () => {
                     </div>
                     <div className='flex flex-row gap-3 border-2 text-purple-800 cursor-pointer hover:text-purple-700 hover:border-purple-700 border-purple-800 p-2 rounded-md items-center justify-center'>
                       <MdOutlineMyLocation className='text-2xl'/>
-                         <button
-                      onClick={() => setShowLocationPopup(true)}
-                    >
-                      Set Location
-                    </button>
+                      <button
+                        onClick={() => setShowLocationPopup(true)}
+                      >
+                        Set Location
+                      </button>
                     </div>
-                   
                   </div>
                 </div>
               </div>
 
               <div className="flex-1">
                 <div className="px-6">
-                  <h2 className="text-xl font-semibold font-family-inter text-gray-800 mb-4">All Charity Programmes</h2>
+                  <h2 className="text-xl font-semibold font-family-inter text-gray-800 mb-4">
+                    {activeTab === 'Trending' ? 'Trending Charity Programmes' : activeTab === 'Featured' ? 'Featured Charity Programmes' : 'All Charity Programmes'}
+                  </h2>
 
                   <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
                     {['Trending', 'Featured', 'All'].map((tab) => (
@@ -549,11 +555,10 @@ const CharityEventsPage = () => {
                               </div>
                               <div className='flex flex-row gap-2'>
                                 <FaRegClock className='text-xl mr-2'/>
-                                 <p className='text-base'>{event.startTime || 'N/A'}</p>
-                                 <p>-</p>
-                                  <p className='text-base'>{event.endTime || 'N/A'}</p>
+                                <p className='text-base'>{event.startTime || 'N/A'}</p>
+                                <p>-</p>
+                                <p className='text-base'>{event.endTime || 'N/A'}</p>
                               </div>
-
                             </div>
                           )}
 
@@ -607,7 +612,7 @@ const CharityEventsPage = () => {
                                   </button>
                                 ) : (
                                   <Link to={`/donation/${event._id}`} className="bg-purple-600 text-white cursor-pointer px-8 py-2 font-family-inter rounded-md hover:bg-purple-700 transition-colors font-medium">
-                                    Donate Now
+                                    {event.type === 'volunteer' ? 'Register Now' : 'Donate Now'}
                                   </Link>
                                 )}
                               </div>
@@ -638,34 +643,23 @@ const CharityEventsPage = () => {
                 {(!events.length || !filteredEvents.length) && (
                   <div className="text-center mt-12 px-8">
                     <div className="mb-8 flex justify-center">
-                      <img
-                        src="/No-Data.json"
-                        alt="No data illustration"
-                        className="w-80 h-80 object-contain"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
-                      />
-                    </div>
-
-                    <h3 className="text-2xl font-bold text-purple-600 font-family-inter mb-4">No results found!</h3>
-                    <p className="text-gray-500 text-lg font-family-inter mb-2">
-                      No results match the current filter criteria. Check the spelling or try to remove filters.
-                    </p>
-                    <div className="flex justify-center items-center h-screen -mt-32">
                       <Lottie
                         animationData={animationData}
                         loop={true}
                         style={{ width: 400, height: 400 }}
                       />
                     </div>
+                    <h3 className="text-2xl font-bold text-purple-600 font-family-inter mb-4">No results found!</h3>
+                    <p className="text-gray-500 text-lg font-family-inter mb-2">
+                      No results match the current filter criteria. Check the spelling or try to remove filters.
+                    </p>
                   </div>
                 )}
               </div>
             </div>
           </div>
         </div>
-        <Footer/>
+        <Footer />
       </div>
 
       {showLocationPopup && (
@@ -737,7 +731,7 @@ const CharityEventsPage = () => {
             </div>
             <div className="h-64 bg-gray-100 rounded-md overflow-hidden">
               <MapContainer
-                center={selectedLatLng ? [selectedLatLng.lat, selectedLatLng.lng] : [7.8731, 80.7718]} // Default to Sri Lanka center
+                center={selectedLatLng ? [selectedLatLng.lat, selectedLatLng.lng] : [7.8731, 80.7718]}
                 zoom={8}
                 style={{ height: '100%', width: '100%' }}
               >

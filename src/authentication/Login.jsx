@@ -76,10 +76,10 @@ const Login = () => {
             navigate('/');
             break;
           case 'organizer':
-            navigate('/organizer-dashboard');
+            navigate('/Organizer/dashboard');
             break;
           case 'admin':
-            navigate('/admin-dashboard');
+            navigate('/Admin/admindashboard');
             break;
           default:
             toast.error('Unknown role. Please contact support.');
